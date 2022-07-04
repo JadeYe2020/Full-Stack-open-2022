@@ -10,13 +10,48 @@ const CountryItem = ({country, handleOnClick}) => {
   )
 }
 
+const CaptialWeather = ({country}) => {
+  const [weatherInfo, setWeatherInfo] = useState(null)
+
+  const api_key = process.env.REACT_APP_API_KEY
+  const api_url = `https://api.openweathermap.org/data/2.5/weather?units=metric&lat=${country.capitalInfo.latlng[0]}&lon=${country.capitalInfo.latlng[1]}&appid=${api_key}`
+
+  // console.log("api_url", api_url);
+
+  useEffect(() => {
+    console.log("api_url", api_url);
+    axios.get(api_url)
+      .then((response) => {
+        setWeatherInfo(weatherInfor => response.data)
+      })  
+  }, [])
+
+  console.log("weatherInfo", weatherInfo);
+
+  // const weatherIcon = weatherInfo? weatherInfo.weather[0].icon : ""
+
+  if (weatherInfo) {
+    return (
+      <div>
+        <div>
+          temperature {weatherInfo.main.temp} Celcius
+        </div>
+        <img src={`http://openweathermap.org/img/wn/${weatherInfo.weather[0].icon}@2x.png`} alt='weather icon' />
+        <div>
+          wind {weatherInfo.wind.speed} m/s
+        </div>
+      </div>
+    )
+  }  
+}
+
 const CountryDetails = ({country, matches}) => {
   if (matches.length === 1) {
     country = matches[0]
   }
   
   if (country) {
-    const languages = Object.values(country.languages)  
+    const languages = Object.values(country.languages)
 
     return (
       <div>      
@@ -30,6 +65,9 @@ const CountryDetails = ({country, matches}) => {
         </ul>
 
         <img src={country.flags.png} alt="flag" />
+
+        <h2>Weather in {country.capital}</h2>
+        <CaptialWeather country={country} />
       </div>
     )
   }  
