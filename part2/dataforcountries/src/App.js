@@ -2,26 +2,40 @@ import { useState, useEffect } from 'react'
 
 import axios from "axios";
 
-const Country = ({country}) => {
-  const languages = Object.values(country.languages)  
-
+const CountryItem = ({country, handleOnClick}) => {
   return (
-    <div>      
-      <h1>{country.name.common}</h1>
-      <div>capital {country.capital}</div>
-      <div>area {country.area}</div>
-
-      <h2>languages:</h2>
-      <ul>
-        {languages.map(lang => <li key={lang}>{lang}</li>)}
-      </ul>
-
-      <img src={country.flags.png} alt="flag" />
+    <div>
+      {country.name.common} <button onClick={handleOnClick}>show</button>
     </div>
   )
 }
 
-const Display = ({matches}) => {
+const CountryDetails = ({country, matches}) => {
+  if (matches.length === 1) {
+    country = matches[0]
+  }
+  
+  if (country) {
+    const languages = Object.values(country.languages)  
+
+    return (
+      <div>      
+        <h1>{country.name.common}</h1>
+        <div>capital {country.capital}</div>
+        <div>area {country.area}</div>
+
+        <h2>languages:</h2>
+        <ul>
+          {languages.map(lang => <li key={lang}>{lang}</li>)}
+        </ul>
+
+        <img src={country.flags.png} alt="flag" />
+      </div>
+    )
+  }  
+}
+
+const Display = ({matches, handleOnClick}) => {
   if (matches.length > 10) {    
     return (
       <div>
@@ -30,16 +44,18 @@ const Display = ({matches}) => {
     )
   } else if (matches.length > 1) {
     return (
-      matches.map(match => <div key={match.name.common}>{match.name.common}</div>)
+      matches.map(match => 
+        <CountryItem key={match.name.common} country={match} handleOnClick={(e) => handleOnClick(match, e)} />
+        )      
     )
-  } else if (matches.length > 0) {    
-    return (<Country country={matches[0]} />)
   }
 }
 
 const App = () => {
   const [countries, setCountries] = useState([])
   const [query, setQuery] = useState("")
+
+  const [countryToShow, setCountryToShow] = useState(null)
 
   useEffect(() => {
     axios
@@ -49,7 +65,16 @@ const App = () => {
       })    
   }, [])
 
-  const handleQueryChange = (event) => setQuery(event.target.value)
+  const handleQueryChange = (event) => {
+    setQuery(event.target.value)
+    // reset details section
+    setCountryToShow(null)
+  }
+
+  const handleOnClick = (toShow) => {
+    console.log("onClick", toShow);
+    setCountryToShow(toShow)
+  }
 
   const matches = countries.filter(country =>     
     country.name.common.toLowerCase().includes(query.toLowerCase())
@@ -62,7 +87,8 @@ const App = () => {
       <div>
         find countries<input value={query} onChange={handleQueryChange} />
       </div>
-      <Display matches={matches} />
+      <Display matches={matches} handleOnClick={handleOnClick} />
+      <CountryDetails matches={matches} country={countryToShow} />
     </div>
   );
 }
