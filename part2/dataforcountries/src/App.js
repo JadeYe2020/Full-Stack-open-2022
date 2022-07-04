@@ -11,12 +11,12 @@ const CountryItem = ({country, handleOnClick}) => {
 }
 
 const CapitalWeather = ({country}) => {
-  const [weatherInfo, setWeatherInfo] = useState(null)
-
-  const api_key = process.env.REACT_APP_API_KEY
-  const api_url = `https://api.openweathermap.org/data/2.5/weather?units=metric&lat=${country.capitalInfo.latlng[0]}&lon=${country.capitalInfo.latlng[1]}&appid=${api_key}`
+  const [weatherInfo, setWeatherInfo] = useState(null)  
 
   useEffect(() => {
+    const api_key = process.env.REACT_APP_API_KEY
+    const api_url = `https://api.openweathermap.org/data/2.5/weather?units=metric&lat=${country.capitalInfo.latlng[0]}&lon=${country.capitalInfo.latlng[1]}&appid=${api_key}`
+
     console.log("api_url", api_url);
     axios.get(api_url)
       .then((response) => {
