@@ -4,11 +4,25 @@ import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 
+const Notification = ({message, type}) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className='notification' style={type}>
+      {message}
+    </div>
+  )
+}
+
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNum, setNewNum] = useState('')
   const [keyword, setKeyword] = useState('')
+  const [notificationMsg, setNotificationMsg] = useState(null)
+  const [messageStyle, setMessageStyle] = useState(null)
 
   useEffect(() => {
     phonebookService
@@ -17,6 +31,18 @@ const App = () => {
         setPersons(initialData)
       })
   }, [])
+
+  const successfulStyle = {
+    color: "green",
+    background: "lightgray",
+    fontSize: 20,
+    borderStyle: "solid",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+  }
+
+  const errorStyle = {...successfulStyle, color: "red"}
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -34,10 +60,16 @@ const App = () => {
           setPersons(persons.concat(addedPerson))
           setNewName('')
           setNewNum('')
+
+          setNotificationMsg(`Added ${addedPerson.name}`)
+          setMessageStyle(successfulStyle)
+
+          setTimeout(() => {
+            setNotificationMsg(null)
+            setMessageStyle(null)
+          }, 5000)
         })
     } else {
-      const duplicateNameId = duplicateName.id
-
       const confirmUpdate = window.confirm(
         `${newName} is already added to phonebook, replace the old number with a new one?`)
       
@@ -48,6 +80,26 @@ const App = () => {
           .updateNum(duplicateName.id, personWithNewNum)
           .then(updatedPerson => {
             setPersons(persons.map(person => person.id !== duplicateName.id ? person : updatedPerson))
+            setNewName('')
+            setNewNum('')
+
+            setNotificationMsg(`Updated ${updatedPerson.name}'s number`)
+            setMessageStyle(successfulStyle)
+
+            setTimeout(() => {
+              setNotificationMsg(null)
+              setMessageStyle(null)
+            }, 5000)
+          })
+          .catch(error => {
+            setNotificationMsg(`Information of ${duplicateName.name} has already been removed from server`)
+            setPersons(persons.filter(person => person.id !== duplicateName.id))
+    
+            setMessageStyle(errorStyle)
+            setTimeout(() => {
+              setNotificationMsg(null)
+              setMessageStyle(null)
+            }, 5000)
           })
       }
     }
@@ -69,19 +121,23 @@ const App = () => {
   }
 
   const deletePersonItem = (id) => {
-    const confirmDelete = window.confirm(`Delete ${persons.find(person => person.id === id).name} ?`)
+    const personToDelete = persons.find(person => person.id === id)
+    const confirmDelete = window.confirm(`Delete ${personToDelete.name} ?`)
 
     if (confirmDelete) {
+
       phonebookService.deletePerson(id)
       .then(deletedPerson => {
         setPersons(persons.filter(person => person.id !== id))
       })
+
     }
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notificationMsg} type={messageStyle} />
       <Filter keyword={keyword} onFilterChange={handleFilterChange} />
 
       <h3>Add a new</h3>
