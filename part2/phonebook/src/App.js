@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import phonebookService from './services/persons'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
@@ -11,27 +11,46 @@ const App = () => {
   const [keyword, setKeyword] = useState('')
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then(response => {
-        setPersons(response.data)
+    phonebookService
+      .getAll()
+      .then(initialData => {
+        setPersons(initialData)
       })
   }, [])
 
   const addPerson = (event) => {
-    event.preventDefault() 
+    event.preventDefault()
+    
+    const duplicateName = persons.find((person) => person.name.toLowerCase() === newName.toLowerCase())
 
-    if (persons.find((person) => person.name === newName )) {
-      alert(newName + " is already added to phonebook")
-    } else {
+    if (!duplicateName) {
       const newPerson = {
         name: newName,
         number: newNum,
       }
-  
-      setPersons(persons.concat(newPerson))
-      setNewName('')
-    }    
+
+      phonebookService.addPerson(newPerson)
+        .then(addedPerson => {
+          setPersons(persons.concat(addedPerson))
+          setNewName('')
+          setNewNum('')
+        })
+    } else {
+      const duplicateNameId = duplicateName.id
+
+      const confirmUpdate = window.confirm(
+        `${newName} is already added to phonebook, replace the old number with a new one?`)
+      
+      if (confirmUpdate) {
+        const personWithNewNum = {...duplicateName, number: newNum}
+
+        phonebookService
+          .updateNum(duplicateName.id, personWithNewNum)
+          .then(updatedPerson => {
+            setPersons(persons.map(person => person.id !== duplicateName.id ? person : updatedPerson))
+          })
+      }
+    }
   }
 
   const personsToShow = keyword ? persons.filter(person => person.name.toLowerCase().includes(keyword.toLowerCase()))
@@ -49,16 +68,28 @@ const App = () => {
     setKeyword(event.target.value)
   }
 
+  const deletePersonItem = (id) => {
+    const confirmDelete = window.confirm(`Delete ${persons.find(person => person.id === id).name} ?`)
+
+    if (confirmDelete) {
+      phonebookService.deletePerson(id)
+      .then(deletedPerson => {
+        setPersons(persons.filter(person => person.id !== id))
+      })
+    }
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
       <Filter keyword={keyword} onFilterChange={handleFilterChange} />
 
       <h3>Add a new</h3>
-      <PersonForm  onSubmit={addPerson} onNameInputChange={handleNameInputChange} onNumInputChange={handleNumInputChange} />
+      <PersonForm  onSubmit={addPerson} onNameInputChange={handleNameInputChange} 
+        onNumInputChange={handleNumInputChange} newName={newName} newNum={newNum} />
 
       <h3>Numbers</h3>
-      <Persons persons={personsToShow} />
+      <Persons persons={personsToShow} deletePersonItem={deletePersonItem} />
     </div>
   )
 }
