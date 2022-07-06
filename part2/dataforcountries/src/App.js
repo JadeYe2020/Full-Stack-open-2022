@@ -17,14 +17,11 @@ const CapitalWeather = ({country}) => {
     const api_key = process.env.REACT_APP_API_KEY
     const api_url = `https://api.openweathermap.org/data/2.5/weather?units=metric&lat=${country.capitalInfo.latlng[0]}&lon=${country.capitalInfo.latlng[1]}&appid=${api_key}`
 
-    console.log("api_url", api_url);
     axios.get(api_url)
       .then((response) => {
         setWeatherInfo(response.data)
       })  
   }, [country])
-
-  console.log("weatherInfo", weatherInfo);
 
   if (weatherInfo) {
     return (
@@ -106,15 +103,12 @@ const App = () => {
   }
 
   const handleOnClick = (toShow) => {
-    console.log("onClick", toShow);
     setCountryToShow(toShow)
   }
 
   const matches = countries.filter(country =>     
     country.name.common.toLowerCase().includes(query.toLowerCase())
   )
-
-  console.log("matches", matches);
 
   return (
     <div>
