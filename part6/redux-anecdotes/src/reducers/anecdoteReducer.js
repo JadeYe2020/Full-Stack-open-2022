@@ -1,5 +1,3 @@
-import { act } from "react-dom/test-utils"
-
 const anecdotesAtStart = [
   'If it hurts, do it more often',
   'Adding manpower to a late software project makes it later!',
@@ -40,9 +38,6 @@ export const createNew = (content) => {
 }
 
 const reducer = (state = initialState, action) => {
-  console.log('state now: ', state)
-  // console.log('action', action)
-
   switch (action.type) {
     case 'VOTE_ANECDOTE':
       return state.map(a => a.id !== action.data.id ? a : {...a, votes: a.votes + 1})
