@@ -7,6 +7,11 @@ const Notification = () => {
     }
   })
 
+  // don't show the component if there's no message to show
+  if (!notification) {
+    return null
+  }
+
   const style = {
     border: 'solid',
     padding: 10,
