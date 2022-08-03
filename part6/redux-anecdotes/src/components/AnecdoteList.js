@@ -3,7 +3,7 @@ import { voteAnecdote } from '../reducers/anecdoteReducer'
 import { showMessage } from '../reducers/notificationReducer'
 
 const AnecdoteList = () => {
-  const anecdotes = useSelector(({anecdotes, filter }) => {
+  const anecdotes = useSelector(({ anecdotes, filter }) => {
     const filtered = anecdotes.filter(a => a.content.includes(filter))
     const sorted = filtered.sort((a, b) => b.votes - a.votes)
     return sorted
