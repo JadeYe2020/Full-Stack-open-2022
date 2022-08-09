@@ -2,7 +2,7 @@ import { connect } from "react-redux"
 
 const Notification = (props) => {
   // don't show the component if there's no message to show
-  if (!props.notification) {
+  if (!props.notification.message) {
     return null
   }
 
@@ -13,7 +13,7 @@ const Notification = (props) => {
   }
   return (
     <div style={style}>
-      { props.notification }
+      { props.notification.message }
     </div>
   )
 }
